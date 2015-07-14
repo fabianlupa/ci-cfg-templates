@@ -1,0 +1,24 @@
+language: java
+jdk: oraclejdk8
+
+# Setup environment
+before_install:
+- chmod +x gradlew
+
+# Default gradle task will be run automatically on build, no need to define it
+
+# Deployment to GitHub-releases
+before_deploy:
+  # Generate a packaged jar and rename it to include the tag
+- ./gradlew assemble
+- mv build/libs/{PROJECT_NAME}.jar build/libs/{PROJECT_NAME}-$TRAVIS_TAG.jar
+deploy:
+  provider: releases
+  api_key:
+    secure: {DEPLOYMENT_KEY}
+  file: build/libs/{PROJECT_NAME}-$TRAVIS_TAG.jar
+  on:
+    tags: true
+    repo: {GITHUB_USER}/{PROJECT_NAME}
+    branch: master
+    condition: "$TRAVIS_TAG =~ ^v\d+\.\d+\.\d+.*$" # Only deploy tags that match something like v1.0.0
